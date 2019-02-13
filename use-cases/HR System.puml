@@ -1,0 +1,33 @@
+@startuml
+actor HR as "HR Advisor"
+actor DM as "Depratment Manager"
+rectangle Database
+rectangle "HR System" {
+    usecase UCa as "Print salaries"
+    usecase UC1 as "Get all salaries"
+    HR - UC1
+    UC1 ..> UCa : includes
+    UC1 - Database
+    usecase UC2 as "Get salaries by department"
+    HR - UC2
+    UC2 ..> UCa : includes
+    UC2 - Database
+    DM - UC2
+    usecase UC4 as "Get salaries by role"
+    HR - UC4
+    UC4 ..> UCa : includes
+    UC4 - Database
+    usecase UC5 as "Add employee"
+    HR - UC5
+    UC5 - Database
+    usecase UC6 as "View employee"
+    HR - UC6
+    UC6 - Database
+    usecase UC7 as "Update employee"
+    HR - UC7
+    UC7 - Database
+    usecase UC8 as "Delete employee"
+    HR - UC8
+    UC8 - Database
+}
+@enduml
