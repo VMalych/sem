@@ -71,6 +71,63 @@ public class App
     }
 
     /**
+     * Get a single employee record.
+     * @param ID emp_no of the employee record to get.
+     * @return The record of the employee with emp_no or null if no employee exists.
+     */
+    public Employee getEmployee(int ID)
+    {
+        try
+        {
+            // Create an SQL statement
+            Statement stmt = con.createStatement();
+            // Create string for SQL statement
+            String strSelect =
+                    "SELECT emp_no, first_name, last_name FROM employees "
+                            + "WHERE emp_no = " + ID;
+            // Execute SQL statement
+            ResultSet rset = stmt.executeQuery(strSelect);
+            // Return new employee if valid.
+            // Check one is returned
+            if (rset.next())
+            {
+                Employee emp = new Employee();
+                emp.emp_no = rset.getInt("emp_no");
+                emp.first_name = rset.getString("first_name");
+                emp.last_name = rset.getString("last_name");
+                return emp;
+            }
+            else
+                return null;
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get employee details");
+            return null;
+        }
+    }
+
+    /**
+     * Displays a single Employee record.
+     * @param emp The employee record to display.
+     */
+    public void displayEmployee(Employee emp)
+    {
+        if (emp != null)
+        {
+            System.out.println(
+                    emp.emp_no + " "
+                            + emp.first_name + " "
+                            + emp.last_name + "\n"
+                            + emp.title + "\n"
+                            + "Salary: " + emp.salary + "\n"
+                            + emp.dept_name + "\n"
+                            + "Manager: " + emp.manager + "\n");
+        }
+    }
+
+    /**
      * Gets all the current employees and salaries.
      * @return A list of all employees and salaries, or null if there is an error.
      */
@@ -110,10 +167,11 @@ public class App
     }
 
     /**
-     * Gets all the employees and salaries by role.
-     * @return A list of all employees and salaries by role, or null if there is an error.
+     * Gets the current employees and salaries of a department.
+     * @param title The name of the department
+     * @return A list of employees and salaries, or null if there is an error.
      */
-    public ArrayList<Employee> getAllSalariesRole(String role)
+    public ArrayList<Employee> getSalariesByTitle(String title)
     {
         try
         {
@@ -123,10 +181,11 @@ public class App
             String strSelect =
                     "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary "
                             + "FROM employees, salaries, titles "
-                            + "WHERE employees.emp_no = titles.emp_no "
+                            + "WHERE employees.emp_no = salaries.emp_no "
+                            + "AND employees.emp_no = titles.emp_no "
                             + "AND salaries.to_date = '9999-01-01' "
                             + "AND titles.to_date = '9999-01-01' "
-                            + "AND titles.title = '" + role + "' "
+                            + "AND titles.title = '" + title + "' "
                             + "ORDER BY employees.emp_no ASC";
             // Execute SQL statement
             ResultSet rset = stmt.executeQuery(strSelect);
@@ -150,6 +209,7 @@ public class App
             return null;
         }
     }
+
     /**
      * Prints a list of employees.
      * @param employees The list of employees to print.
@@ -168,61 +228,6 @@ public class App
         }
     }
 
-    public Employee getEmployee(int ID)
-    {
-        try
-        {
-            // Create an SQL statement
-            Statement stmt = con.createStatement();
-            // Create string for SQL statement
-            String strSelect =
-                    "SELECT employees.emp_no, first_name, last_name, title, salary "
-                            + "FROM employees "
-                            + "RIGHT JOIN salaries ON salaries.emp_no = employees.emp_no AND salaries.to_date = '9999-01-01' "
-                            + "RIGHT JOIN titles ON titles.emp_no = employees.emp_no AND titles.to_date = '9999-01-01' "
-                            + "WHERE employees.emp_no = " + ID;
-            // Execute SQL statement
-            ResultSet rset = stmt.executeQuery(strSelect);
-            // Return new employee if valid.
-            // Check one is returned
-            if (rset.next())
-            {
-                Employee emp = new Employee();
-                emp.emp_no = rset.getInt("employees.emp_no");
-                emp.first_name = rset.getString("first_name");
-                emp.last_name = rset.getString("last_name");
-                emp.title = rset.getString("title");
-                emp.salary = rset.getInt("salary");
-                return emp;
-            }
-            else
-                return null;
-        }
-        catch (Exception e)
-        {
-            System.out.println(e.getMessage());
-            System.out.println("Failed to get employee details");
-            return null;
-        }
-    }
-
-    public void displayEmployee(Employee emp)
-    {
-        if (emp != null)
-        {
-            System.out.println(
-                    emp.emp_no + " "
-                            + emp.first_name + " "
-                            + emp.last_name + "\n"
-                            + emp.title + "\n"
-                            + "Salary:" + emp.salary + "\n"
-                            + emp.dept_name + "\n"
-                            + "Manager: " + emp.manager + "\n");
-        }
-    }
-
-
-
     public static void main(String[] args)
     {
         // Create new Application
@@ -232,12 +237,9 @@ public class App
         a.connect();
 
         // Extract employee salary information
-        ArrayList<Employee> employees = a.getAllSalariesRole("Engineer");
+        ArrayList<Employee> employees = a.getSalariesByTitle("Engineer");
 
-        // Test the size of the returned data - should be 240124
-        System.out.println(employees.size());
-
-        //Print salaries
+        // Print salary report
         a.printSalaries(employees);
 
         // Disconnect from database
