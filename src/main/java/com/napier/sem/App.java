@@ -66,15 +66,57 @@ public class App {
             Statement stmt = con.createStatement();
             // Create string for SQL statement
             String strSelect =
-                    "SELECT emp_no, first_name, last_name FROM employees "
-                            + "WHERE emp_no = " + ID;
+                    "SELECT employees.emp_no, first_name, last_name, departments.dept_name "
+                            + "FROM employees, dept_emp, departments "
+                            + "WHERE employees.emp_no = '" + ID + "' "
+                            + "AND dept_emp.emp_no = employees.emp_no "
+                            + "AND dept_emp.dept_no = departments.dept_no";
             // Execute SQL statement
             ResultSet rset = stmt.executeQuery(strSelect);
             // Return new employee if valid.
             // Check one is returned
             if (rset.next()) {
                 Employee emp = new Employee();
-                emp.emp_no = rset.getInt("emp_no");
+                emp.emp_no = rset.getInt("employees.emp_no");
+                emp.first_name = rset.getString("first_name");
+                emp.last_name = rset.getString("last_name");
+                emp.dept = getDepartment(rset.getString("departments.dept_name"));
+                return emp;
+            } else
+                return null;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get employee details");
+            return null;
+        }
+    }
+
+    /**
+     * Get a single employee record.
+     *
+     * @param firstName first_name of the employee record to get.
+     * @param lastName last_name of the employee record to get.
+     * @return The record of the employee with emp_no or null if no employee exists.
+     */
+    public Employee getEmployee(String firstName, String lastName) {
+        try {
+            // Create an SQL statement
+            Statement stmt = con.createStatement();
+            // Create string for SQL statement
+            String strSelect =
+                    "SELECT employees.emp_no, first_name, last_name, departments.dept_name "
+                            + "FROM employees, dept_emp, departments  "
+                            + "WHERE first_name = '" + firstName + "' "
+                            + "AND last_name = '" + lastName +"' "
+                            + "AND dept_emp.emp_no = employees.emp_no "
+                            + "AND dept_emp.dept_no = departments.dept_no";
+            // Execute SQL statement
+            ResultSet rset = stmt.executeQuery(strSelect);
+            // Return new employee if valid.
+            // Check one is returned
+            if (rset.next()) {
+                Employee emp = new Employee();
+                emp.emp_no = rset.getInt("employees.emp_no");
                 emp.first_name = rset.getString("first_name");
                 emp.last_name = rset.getString("last_name");
                 return emp;
@@ -89,7 +131,6 @@ public class App {
 
     /**
      * Displays a single Employee record.
-     *
      * @param emp The employee record to display.
      */
     public void displayEmployee(Employee emp) {
@@ -180,23 +221,26 @@ public class App {
         }
     }
 
-    public Department getDepartment(String dept_no) {
+    public Department getDepartment(String dept_name) {
         try {
             // Create an SQL statement
             Statement stmt = con.createStatement();
             // Create string for SQL statement
             String strSelect =
-                    "SELECT dept_no, dept_name, emp_no FROM departments JOIN dept_manager ON departments.dept_no = dept_manager.dept_no"
-                            + "WHERE dept_no = " + dept_no;
+                    "SELECT departments.dept_no, departments.dept_name, employees.first_name, employees.last_name "
+                            + "FROM departments JOIN dept_manager "
+                            + "ON departments.dept_no = dept_manager.dept_no "
+                            + "JOIN employees ON employees.emp_no = dept_manager.emp_no "
+                            + "WHERE departments.dept_name = '" + dept_name + "' ";
             // Execute SQL statement
             ResultSet rset = stmt.executeQuery(strSelect);
             // Return new department if valid.
             // Check one is returned
             if (rset.next()) {
                 Department dept = new Department();
-                dept.dept_no = rset.getString("dept_no");
-                dept.dept_name = rset.getString("dept_name");
-                dept.manager = getEmployee(rset.getInt("emp_no"));
+                dept.dept_no = rset.getString("departments.dept_no");
+                dept.dept_name = rset.getString("departments.dept_name");
+                dept.manager = getEmployee(rset.getString("employees.first_name"), rset.getString("employees.last_name"));
                 return dept;
             } else
                 return null;
@@ -219,7 +263,7 @@ public class App {
                             + "AND employees.emp_no = dept_emp.emp_no "
                             + "AND dept_emp.dept_no = departments.dept_no "
                             + "AND salaries.to_date = '9999-01-01' "
-                            + "AND departments.dept_no = '" + dept + "' "
+                            + "AND departments.dept_no = '" + dept.dept_no + "' "
                             + "ORDER BY employees.emp_no ASC";
             // Execute SQL statement
             ResultSet rset = stmt.executeQuery(strSelect);
