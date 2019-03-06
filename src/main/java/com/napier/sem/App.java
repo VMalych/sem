@@ -320,6 +320,16 @@ public class App {
         }
     }
 
+    /**
+     * Method to add employee to database
+     *
+     * @param emp Employee to add
+     */
+    public void addEmployee(Employee emp)
+    {
+
+    }
+
     public static void main(String[] args)
     {
         // Create new Application
