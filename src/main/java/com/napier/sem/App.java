@@ -332,7 +332,7 @@ public class App {
             Statement stmt = con.createStatement();
             String strUpdate =
                     "INSERT INTO employees (emp_no, first_name, last_name, birth_date, gender, hire_date) " +
-                            "VALUES (" + emp.emp_no + ", '" + emp.first_name + "', '" + emp.last_name + "', " +
+                            "VALUES ('" + emp.emp_no + "', '" + emp.first_name + "', '" + emp.last_name + "', " +
                             "'9999-01-01', 'M', '9999-01-01')";
             stmt.execute(strUpdate);
         }
