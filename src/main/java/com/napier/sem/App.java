@@ -1,18 +1,26 @@
 package com.napier.sem;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.sql.*;
 import java.util.ArrayList;
 
+@SpringBootApplication
+@RestController
 public class App {
     /**
      * Connection to MySQL database.
      */
-    private Connection con = null;
+    private static Connection con = null;
 
     /**
      * Connect to the MySQL database.
      */
-    public void connect(String location)
+    public static void connect(String location)
     {
         try
         {
@@ -53,7 +61,7 @@ public class App {
     /**
      * Disconnect from the MySQL database.
      */
-    public void disconnect() {
+    public static void disconnect() {
         if (con != null) {
             try {
                 // Close connection
@@ -66,11 +74,11 @@ public class App {
 
     /**
      * Get a single employee record.
-     *
      * @param ID emp_no of the employee record to get.
      * @return The record of the employee with emp_no or null if no employee exists.
      */
-    public Employee getEmployee(int ID) {
+    @RequestMapping("employee")
+    public Employee getEmployee(@RequestParam(value = "id") String ID) {
         try {
             // Create an SQL statement
             Statement stmt = con.createStatement();
@@ -158,6 +166,7 @@ public class App {
      *
      * @return A list of all employees and salaries, or null if there is an error.
      */
+    @RequestMapping("salaries")
     public ArrayList<Employee> getAllSalaries() {
         try {
             // Create an SQL statement
@@ -194,7 +203,8 @@ public class App {
      * @param title The name of the department
      * @return A list of employees and salaries, or null if there is an error.
      */
-    public ArrayList<Employee> getSalariesByTitle(String title) {
+    @RequestMapping("salaries_title")
+    public ArrayList<Employee> getSalariesByTitle(@RequestParam(value = "title") String title) {
         try {
             // Create an SQL statement
             Statement stmt = con.createStatement();
@@ -228,7 +238,8 @@ public class App {
         }
     }
 
-    public Department getDepartment(String dept_name) {
+    @RequestMapping("department")
+    public Department getDepartment(@RequestParam(value = "dept") String dept_name) {
         try {
             // Create an SQL statement
             Statement stmt = con.createStatement();
@@ -258,7 +269,8 @@ public class App {
         }
     }
 
-    public ArrayList<Employee> getSalariesByDepartment(Department dept) {
+    @RequestMapping("salaries_department")
+    public ArrayList<Employee> getSalariesByDepartment(@RequestParam(value = "dept") String dept_name) {
         try {
             // Create an SQL statement
             Statement stmt = con.createStatement();
@@ -270,7 +282,7 @@ public class App {
                             + "AND employees.emp_no = dept_emp.emp_no "
                             + "AND dept_emp.dept_no = departments.dept_no "
                             + "AND salaries.to_date = '9999-01-01' "
-                            + "AND departments.dept_no = '" + dept.dept_no + "' "
+                            + "AND departments.dept_name = '" + dept_name + "' "
                             + "ORDER BY employees.emp_no ASC";
             // Execute SQL statement
             ResultSet rset = stmt.executeQuery(strSelect);
@@ -342,26 +354,16 @@ public class App {
 
     public static void main(String[] args)
     {
-        // Create new Application
-        App a = new App();
-
         // Connect to database
         if (args.length < 1)
         {
-            a.connect("localhost:33060");
+            connect("localhost:33060");
         }
         else
         {
-            a.connect(args[0]);
+            connect(args[0]);
         }
 
-        Department dept = a.getDepartment("Sales");
-        ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
-
-        // Print salary report
-        a.printSalaries(employees);
-
-        // Disconnect from database
-        a.disconnect();
+        SpringApplication.run(App.class, args);
     }
 }
