@@ -37,7 +37,6 @@ public class AppIntegrationTest
         emp.last_name = "Chalmers";
         app.addEmployee(emp);
         emp = app.getEmployee(500001);
-        System.out.println(emp.first_name);
         assertEquals(emp.emp_no, 500001);
         assertEquals(emp.first_name, "Kevin");
         assertEquals(emp.last_name, "Chalmers");
